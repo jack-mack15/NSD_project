@@ -1,0 +1,27 @@
+qui ci sono le configurazioni dei vari tenant avviate in automatico con /root/start.sh.
+semplicemente assegno indirizzi e poi le route di default per i rispettivi bridge salvati nella leaf.
+sia in L1 che in L2 i bridge hanno gli stessi indirizzi: 10.0.10.1 per A e 10.0.20.1 per B
+
+#A1
+ip addr add 10.0.10.10/24 dev eth0
+ip link set eth0 up
+
+ip route add default via 10.0.10.1
+
+#A2
+ip addr add 10.0.10.20/24 dev eth0
+ip link set eth0 up
+
+ip route add default via 10.0.10.1
+
+#B1
+ip addr add 10.0.20.10/24 dev eth0
+ip link set eth0 up
+
+ip route add default via 10.0.20.1
+
+#B2
+ip addr add 10.0.20.20/24 dev eth0
+ip link set eth0 up
+
+ip route add default via 10.0.20.1

@@ -1,0 +1,23 @@
+#S1 configuration
+
+interface eth0
+ip address 10.1.1.2/30
+interface eth1
+ip address 10.2.1.2/30
+interface lo
+ip address 100.64.0.10/32
+
+router ospf
+ospf router-id 100.64.0.10
+network 0.0.0.0/0 area 0
+
+router bgp 65000
+bgp router-id 100.64.0.10
+neighbor 10.1.1.1 remote-as 65001
+neighbor 10.2.1.1 remote-as 65002
+
+address-family l2vpn evpn
+neighbor 10.1.1.1 activate
+neighbor 10.2.1.1 activate
+exit-address-family
+end

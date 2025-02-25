@@ -1,0 +1,92 @@
+#L2 configuration
+
+##############parte bash
+# vtep IP address (tenantA)
+ip addr add 100.64.0.2/32 dev lo
+# vrfs and bridges (tenant1)
+ip link add vrf1 type vrf table 1100
+ip link set vrf1 up
+
+ip link add br10 type bridge
+ip link set br10 master vrf1
+ip link set br10 addr aa:bb:cc:00:00:02
+ip addr add 10.0.10.1/24 dev br10
+
+ip link set eth0 master br10
+ip link set eth0 up
+ip link set br10 up
+
+#vni device (tenantA)
+ip link add vni110 type vxlan local 100.64.0.2 dstport 4789 id 110 nolearning
+ip link set vni110 master br10 addrgenmode none
+ip link set vni110 type bridge_slave neigh_suppress on learning off
+ip link set vni110 up
+
+# vrfs and bridges (tenantB)
+ip link add vrf2 type vrf table 1200
+ip link set vrf2 up
+
+ip link add br20 type bridge
+ip link set br20 master vrf2
+ip link set br20 addr aa:bb:cc:00:00:12
+ip addr add 10.0.20.1/24 dev br20
+
+ip link set eth1 master br20
+ip link set eth1 up
+ip link set br20 up
+
+# vni device (tenantB)
+ip link add vni120 type vxlan local 100.64.0.2 dstport 4789 id 120 nolearning
+ip link set vni120 master br20 addrgenmode none
+ip link set vni120 type bridge_slave neigh_suppress on learning off
+ip link set vni120 up
+
+###################parte vtysh
+conf t
+interface eth2
+ip address 10.2.1.1/30
+interface eth3
+ip address 10.2.2.1/30
+
+router ospf
+ospf router-id 100.64.0.2
+network 10.2.1.0/30 area 0
+network 10.2.2.0/30 area 0
+network 100.64.0.2/32 area 0
+
+router bgp 65002
+neighbor 10.2.1.2 remote-as 65000
+neighbor 10.2.2.2 remote-as 65000
+
+address-family ipv4 unicast
+network 100.64.0.2/32
+
+address-family l2vpn evpn
+neighbor 10.2.1.2 activate
+neighbor 10.2.2.2 activate
+advertise-all-vni
+advertise-svi-ip
+exit-address-family
+
+
+router bgp 65002 vrf vrf1
+
+address-family ipv4 unicast
+redistribute static
+exit-address-family
+
+address-family l2vpn evpn
+advertise ipv4 unicast
+exit-address-family
+
+
+router bgp 65002 vrf vrf2
+
+address-family ipv4 unicast
+redistribute static
+exit-address-family
+
+address-family l2vpn evpn
+advertise ipv4 unicast
+exit-address-family
+end

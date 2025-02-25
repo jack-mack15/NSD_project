@@ -1,0 +1,23 @@
+#A1
+ip addr add 10.0.10.10/24 dev eth0
+ip link set eth0 up
+
+ip route add default via 10.0.10.1
+
+#A2
+ip addr add 10.0.10.20/24 dev eth0
+ip link set eth0 up
+
+ip route add default via 10.0.10.1
+
+#B1
+ip addr add 10.0.20.10/24 dev eth0
+ip link set eth0 up
+
+ip route add default via 10.0.20.1
+
+#B2
+ip addr add 10.0.20.20/24 dev eth0
+ip link set eth0 up
+
+ip route add default via 10.0.20.1
