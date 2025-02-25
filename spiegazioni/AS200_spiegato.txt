@@ -1,0 +1,97 @@
+#CONFIGURAZIONE AS200
+qua dentro ci sta tutta la robba di R202, R201 e R203. per i router bgp vado a impostare interfacce, bgp e ospf.
+a nessun router assegno reti pubbliche se non necessariamente specificato nel progetto. infatti R202 è uno dei pochi che ha una rete
+pubblica assegnata. in questa rete ci sta R203.
+
+
+
+#############################R201
+conf t
+
+#interfaces
+interface lo
+ip address 2.1.1.1/32
+interface eth0
+ip address 10.2.12.1/30
+interface eth1
+ip address 10.12.0.2/30
+
+#bgp
+router bgp 200
+neighbor 2.2.2.2 remote-as 200
+neighbor 2.2.2.2 update-source 2.1.1.1
+neighbor 2.2.2.2 next-hop-self
+neighbor 10.12.0.1 remote-as 100
+
+#ospf
+router ospf
+router-id 2.1.1.1
+network 2.1.1.1/32 area 0
+network 10.2.12.0/30 area 0
+end
+		
+###########################R202
+conf t
+
+#interfaces
+interface lo
+ip address 2.2.2.2/32
+interface eth0
+ip address 10.2.12.2/30
+interface eth1
+ip address 2.203.202.1/24
+
+#bgp
+router bgp 200
+network 2.203.202.0/24
+neighbor 2.1.1.1 remote-as 200
+neighbor 2.1.1.1 update-source 2.2.2.2
+neighbor 2.1.1.1 next-hop-self
+
+#ospf
+router ospf
+router-id 2.2.2.2
+network 2.2.2.2/32 area 0
+network 2.203.202.0/24 area 0
+network 10.2.12.0/30 area 0
+end
+
+R203 non è bgp infatti setto solo le interfacce e la default route verso il router R202.
+poi sotto le interfacce vado a riportare tutti i comandi di iptables per implementare il firewall.
+io il firewall lo avevo anche pensato differente, però così mi sembra più corretto
+
+##################################R203
+ip addr add 192.168.2.1/24 dev eth0
+ip addr add 2.203.202.2/24 dev eth1
+
+ip route add default via 2.203.202.1
+
+
+#firewall
+#queste prime tre righe servono solo per il set up del firewall, creo due simboli che mi semplificano il codice sotto
+#poi droppo tutto quello che potrebbe essere rimasto di iptables.
+
+export LAN=eth0
+export WAN=eth1
+iptables -F
+
+#anche qui droppo tutto, si potrebbe anche rimuovere questa parte di drop, in teoria basta iptables -F
+
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+iptables -P OUTPUT ACCEPT
+
+#questa prima riga fa da NAT per tutto il traffico uscente dalla LAN, vedi tu se poi vuoi applicarlo anche dall'esterno all'interno
+iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE
+
+#queste qua sotto sono le righe che permettono il traffico ad alcuni protocolli. la prima riga è quella che permette solo il traffico iniziato dalla LAN.
+#in ordine 22 è ssh (che si potrebbe eliminare perché non serve più), 53 è dns e 1194 è openvpn
+iptables -A FORWARD -m conntrack --ctstate ESTABLISHED -j ACCEPT
+
+iptables -A FORWARD -i $LAN -p tcp --dport 22 -j ACCEPT
+iptables -A FORWARD -i $LAN -p udp --dport 53 -j ACCEPT
+iptables -A FORWARD -i $LAN -p udp --dport 1194 -j ACCEPT
+ 
+#poi lascio passare icmp per fare i test
+iptables -A INPUT -p icmp -j ACCEPT
+iptables -A FORWARD -p icmp -j ACCEPT

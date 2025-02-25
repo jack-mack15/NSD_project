@@ -1,0 +1,132 @@
+#CONFIGURAZIONE AS100
+questa è la rete un po più difficile tra quelle bgp perché ci sta MPLS.
+quindi nelle configurazioni trovi anche mpls ldp che è il protocollo per distribuire, assegnare le label e dire su quali label vuoi attivare mpls.
+occhio che R102 non deve avere BGP perché è il nodo LSR (label switch router) quindi non deve avere info di routing bgp, deve solo fare label switch
+con mpls.
+inoltre tutti i router hanno degli script di start un po' particolari perché, per non saper leggere e scrivere (ed inoltre ho smadonnato tanto), devi rispettare
+l'ordine delle configurazioni del lab, che viene rispettato dagli script. ricorda sono /root/start.sh, poi gli script invocano altri script.
+
+ti spiego solo un nodo, tanto poi sono uguali. OCCHIO in fondo ci sono delle cose particolari valle a vedere.
+
+prima di tutto, classifca configurazione delle interfacce e di ospf. ospf annuncia solo le reti interne all'as.
+R101 è un LER (label edge router)
+#R101
+conf t
+
+interface lo
+ip address 1.1.1.1/32
+interface eth0
+ip address 10.12.0.1/30
+interface eth1
+ip address 10.1.12.1/30
+
+router ospf
+router-id 1.1.1.1
+network 1.1.1.1/32 area 0
+network 10.1.12.0/30 area 0
+	
+#questa è la parte di mpls, che se vedi sono tutte uguali a parte gli indirizzi per i vari router
+mpls ldp
+router-id 1.1.1.1
+#ordered-control credo serva a specificare che voglio lo stesso ordine di LDP unsolicited
+ordered-control 
+#con address-family indico la famiglia di indirizzi è IPv4 e deve usare internamente l'indirizzo 1.1.1.1 per trasportare LDP
+address-family ipv4 
+discovery transport-address 1.1.1.1
+#qui specifico quali interfacce su cui attivare mpls. se usi eth0 rompi tutto (DUNNO WHY)
+interface eth1
+interface lo
+
+#bgp se non sbaglio è classico, quindi dico chi sono i vicini e come updatare la source o il next hop
+router bgp 100
+bgp router-id 1.1.1.1
+neighbor 10.12.0.2 remote-as 200 
+neighbor 1.3.3.3 remote-as 100
+neighbor 1.3.3.3 update-source 1.1.1.1
+		
+address-family ipv4 unicast
+neighbor 1.3.3.3 next-hop-self
+
+end
+
+#R102
+conf t
+	
+interface lo
+ip address 1.2.2.2/32
+interface eth0
+ip address 10.1.12.2/30
+interface eth1
+ip address 10.1.13.1/30
+	
+router ospf
+router-id 1.2.2.2
+network 1.2.2.2/32 area 0
+network 10.1.13.0/30 area 0
+network 10.1.12.0/30 area 0
+
+
+mpls ldp
+router-id 1.2.2.2
+ordered-control 
+address-family ipv4 
+discovery transport-address 1.2.2.2
+interface eth0
+interface eth1
+interface lo
+
+end
+
+#R103
+conf t
+
+interface lo
+ip address 1.3.3.3/32
+interface eth0
+ip address 10.13.0.1/30
+interface eth1
+ip address 10.1.13.2/30
+
+	
+router ospf
+router-id 1.3.3.3
+network 1.3.3.3/32 area 0
+network 10.1.13.0/30 area 0
+
+	
+mpls ldp
+router-id 1.3.3.3
+ordered-control 
+address-family ipv4 
+discovery transport-address 1.3.3.3
+interface eth1
+interface lo
+
+		
+router bgp 100
+bgp router-id 1.3.3.3
+neighbor 10.13.0.2 remote-as 300 
+neighbor 1.1.1.1 remote-as 100
+neighbor 1.1.1.1 update-source 1.3.3.3
+		
+address-family ipv4 unicast
+neighbor 1.1.1.1 next-hop-self
+
+end
+
+
+#qua abbiamo questa robba che se non ti ricordi, serve a settare alcuni parametri del kernel, necessari per usare MPLS.
+#questa è un altro step che devi eseguire in ordine senno se rompe tutto. 
+#le prime righe sono per R101 e R103 che sono i ler, mentre le ultime quattro sono di R102. questi file li devi mettere in /etc/sysctl.conf
+#che io e matteo non abbiamo reso persistente (/etc non è persistente) per paura, quindi se vedi negli scriptini ad un certo punto copio 
+#/root/sysctl.conf in quello di sopra. se segui l'ordine degli script del /root/start.sh capirai
+#di base vai ad attivare le interfacce che usi per MPLS e labels indica il limite massimo di label.
+
+net.mpls.conf.lo.input = 1
+net.mpls.conf.eth1.input = 1
+net.mpls.platform_labels = 100000
+
+net.mpls.conf.lo.input = 1
+net.mpls.conf.eth0.input = 1
+net.mpls.conf.eth1.input = 1
+net.mpls.platform_labels = 100000

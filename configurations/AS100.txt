@@ -1,0 +1,114 @@
+#CONFIGURAZIONE AS100
+
+#R101
+conf t
+
+interface lo
+ip address 1.1.1.1/32
+interface eth0
+ip address 10.12.0.1/30
+interface eth1
+ip address 10.1.12.1/30
+
+router ospf
+router-id 1.1.1.1
+network 1.1.1.1/32 area 0
+network 10.1.12.0/30 area 0
+	
+mpls ldp
+router-id 1.1.1.1
+ordered-control 
+address-family ipv4 
+discovery transport-address 1.1.1.1
+interface eth1
+interface lo
+
+router bgp 100
+bgp router-id 1.1.1.1
+neighbor 10.12.0.2 remote-as 200 
+neighbor 1.3.3.3 remote-as 100
+neighbor 1.3.3.3 update-source 1.1.1.1
+		
+address-family ipv4 unicast
+neighbor 1.3.3.3 next-hop-self
+
+end
+
+#R102
+conf t
+	
+interface lo
+ip address 1.2.2.2/32
+interface eth0
+ip address 10.1.12.2/30
+interface eth1
+ip address 10.1.13.1/30
+	
+router ospf
+router-id 1.2.2.2
+network 1.2.2.2/32 area 0
+network 10.1.13.0/30 area 0
+network 10.1.12.0/30 area 0
+
+
+mpls ldp
+router-id 1.2.2.2
+ordered-control 
+address-family ipv4 
+discovery transport-address 1.2.2.2
+interface eth0
+interface eth1
+interface lo
+
+end
+
+#R103
+conf t
+
+interface lo
+ip address 1.3.3.3/32
+interface eth0
+ip address 10.13.0.1/30
+interface eth1
+ip address 10.1.13.2/30
+
+	
+router ospf
+router-id 1.3.3.3
+network 1.3.3.3/32 area 0
+network 10.1.13.0/30 area 0
+
+	
+mpls ldp
+router-id 1.3.3.3
+ordered-control 
+address-family ipv4 
+discovery transport-address 1.3.3.3
+interface eth1
+interface lo
+
+		
+router bgp 100
+bgp router-id 1.3.3.3
+neighbor 10.13.0.2 remote-as 300 
+neighbor 1.1.1.1 remote-as 100
+neighbor 1.1.1.1 update-source 1.3.3.3
+		
+address-family ipv4 unicast
+neighbor 1.1.1.1 next-hop-self
+
+end
+
+
+#i vari file
+
+net.mpls.conf.lo.input = 1
+net.mpls.conf.eth1.input = 1
+net.mpls.platform_labels = 100000
+
+net.mpls.conf.lo.input = 1
+net.mpls.conf.eth0.input = 1
+net.mpls.conf.eth1.input = 1
+net.mpls.platform_labels = 100000
+
+ 

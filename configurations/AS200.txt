@@ -1,0 +1,85 @@
+#CONFIGURAZIONE AS200
+
+#############################R201
+conf t
+
+#interfaces
+interface lo
+ip address 2.1.1.1/32
+interface eth0
+ip address 10.2.12.1/30
+interface eth1
+ip address 10.12.0.2/30
+
+#bgp
+router bgp 200
+neighbor 2.2.2.2 remote-as 200
+neighbor 2.2.2.2 update-source 2.1.1.1
+neighbor 2.2.2.2 next-hop-self
+neighbor 10.12.0.1 remote-as 100
+
+#ospf
+router ospf
+router-id 2.1.1.1
+network 2.1.1.1/32 area 0
+network 10.2.12.0/30 area 0
+end
+
+###########################R202
+conf t
+
+#interfaces
+interface lo
+ip address 2.2.2.2/32
+interface eth0
+ip address 10.2.12.2/30
+interface eth1
+ip address 2.203.202.1/24
+
+#bgp
+router bgp 200
+network 2.203.202.0/24
+neighbor 2.1.1.1 remote-as 200
+neighbor 2.1.1.1 update-source 2.2.2.2
+neighbor 2.1.1.1 next-hop-self
+
+#ospf
+router ospf
+router-id 2.2.2.2
+network 2.2.2.2/32 area 0
+network 2.203.202.0/24 area 0
+network 10.2.12.0/30 area 0
+end
+
+
+##################################R203
+ip addr add 192.168.2.1/24 dev eth0
+ip addr add 2.203.202.2/24 dev eth1
+
+ip route add default via 2.203.202.1
+
+
+#firewall
+#set up
+export LAN=eth0
+export WAN=eth1
+iptables -F
+
+#defaults
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+iptables -P OUTPUT ACCEPT
+
+#nat
+iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE
+
+#solo initialize da LAN
+iptables -A FORWARD -m conntrack --ctstate ESTABLISHED -j ACCEPT
+
+iptables -A FORWARD -i $LAN -p tcp --dport 22 -j ACCEPT
+iptables -A FORWARD -i $LAN -p udp --dport 53 -j ACCEPT
+iptables -A FORWARD -i $LAN -p udp --dport 1194 -j ACCEPT
+ 
+#per testing 
+iptables -A INPUT -p icmp -j ACCEPT
+iptables -A FORWARD -p icmp -j ACCEPT
