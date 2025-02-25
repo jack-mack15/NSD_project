@@ -1,0 +1,10 @@
+nel client-200 (il nodo, non la vm) ci stanno nella cartella /root/client200/client200 tutta la robba che serve per openvpn, copiala con ssh (te lo consiglio).
+
+per utilizzare SSH fai questo:
+- sul nodo che deve fare da server vai nel fil /etc/ssh/sshd_config
+- nel file decommenta "permitRootLogin", dovrebbe essere linea 33, e mettigli accanto yes al posto di prohibit...
+- poi sempre nel nodo modifica la password con "passwd"
+- a questo punto fai "service ssh restart"
+
+nel client invece devi fare:
+- scp -r root@<indirizzo-server>:<directory-da-copiare> .
