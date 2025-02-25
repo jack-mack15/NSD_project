@@ -1,0 +1,58 @@
+questi sono i file di configurazione per utilizzare openvpn. 
+come vedi ho un file per ogni client e uno per il server. questi file stanno nella rispettive cartelle /root/server e /root/clientxxx (no non è un client hot).
+in fondo ti riporto i comandi per eseguire openvpn.
+
+#file configurazione server
+port 1194		#porta di openvpn
+proto udp		#il protocollo che si usa, credo sia solo udp
+dev tun			#qui specifico che voglio utilizzare driver tun, quindi tunneling ip
+ca ca.crt		#specifico il certificato della ca "root"
+cert server.crt		#specifico il certificato del client
+key server.key		#chiavi del client
+dh dh.pem		#materiale diffie hellman necessario per il server
+server 192.168.100.0 255.255.255.0		#qui indico la rete che userò per la vpn, mi sono attenuto al lab, potremmo cambiarla
+push "route 192.168.2.0 255.255.255.0"		#qui sto indicando ai client, le reti dei client, che poi potranno raggiungere con la vpn
+push "route 192.168.4.0 255.255.255.0"		
+route 192.168.2.0 255.255.255.0			#qui aggiungo le rotte per il server (per raggiungere i client
+route 192.168.4.0 255.255.255.0			
+client-config-dir ccd				#indico la cartella in cui metto le iroute per la LAN di client400, poiché client400 non è client openvpn (ma R402)
+client-to-client				#indico che i client possono comunicare tra loro, credo che sia richiesto così
+keepalive 10 120				#intervallo keepalive message 
+cipher AES-256GCM				#cipher suite da usare
+
+
+#in ccd/client402
+iroute 192.168.4.0 255.255.255.0
+
+
+#file configurazione client200
+client
+dev tun
+proto udp
+remote 3.3.3.2 1194			#indico l'indirizzo del server
+resolv-retry infinite			#serve per tentare il collegamento all'infinito
+ca ca.crt				#anche qui come per il server vado a specificare i file di certificati e chiavi
+cert client200.crt			#ma qui non ho le quantità diffie hellman
+key client200.key
+remote-cert-tls server			#se non sbaglio serve per far verificare al client il certificato del server
+cipher AES-256-GCM
+
+#file configurazione R401
+client
+dev tun
+proto udp
+remote 3.3.3.2 1194
+resolv-retry infinite
+ca ca.crt
+cert client402.crt
+key client402.key
+remote-cert-tls server
+cipher AES-256-GCM
+
+
+#####per eseguire openvpn
+devi avviarlo sia su client sia sul server. spostati nelle cartelle in cui ci sono i file di configurazione openvpn, cioè /root/server per il server e /root/clientxxx per i client
+usa tmux per creare un nuovo terminale, cioè esegui il comando "tmux" poi "ctrl + a poi c" per creare un terminale nuovo.
+per avviare openvpn esegui "openvpn server.ovpn" sul server e "openvpn client.ovpn" sui client (i nomi dei file di configurazione dei client sono gli stessi client.ovpn)
+a questo punto fanno da soli. puoi verificare se è andato a buon fine osservando se tra le interfacce dei client trovi tun0.
+

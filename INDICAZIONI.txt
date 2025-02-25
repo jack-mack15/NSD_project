@@ -24,7 +24,8 @@ DA COMPLETARE:
 
 -VXLAN: sistemare meglio il traffico uscente e entrante dalla DC. occhio, tenant A devono contattare internet e i tenant B devono essere contattati da internet. 
 segui esattamente le parole della specifica. inoltre matteo ha messo su GW300 una vrf e due interfacce virtuali eth0.10 e eth0.20 e il NAT lo ha applicato internamente
-solo ai tenant B, o una cosa del genere.
+solo ai tenant B, o una cosa del genere. le interfacce virtuli le ha collegate a due bridge se non sbaglio, nello stesso modo in cui il tulux lo ha fatto nel primo lab 
+di VXLAN per collegare  tenat alle leaf.
 manca anche mettere a posto L2.
 
 -FALCO: manca tutto falco.

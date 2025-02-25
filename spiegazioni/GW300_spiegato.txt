@@ -1,0 +1,14 @@
+questa sotto è la configurazione che viene eseguita all'avvio. ricordati che questo è il server di Openvpn. 
+per i tenant della VXLAN io ho impostato qua delle default route, in cui dico che il tenant A 10.0.10.0/24 lo devi indirizzare a
+192.168.100.1 che è l'interfaccia eth4 della leaf 1. tuttavia non so se questa è la scelta giusta perché come ti dicevo in "INDICAZIONI.txt"
+matteo ha inserito una vrf (o due, non so) e due interfacce virtuali con due bridge, in modo analogo a come nel penultimo lab (il primo di VXLAN) il tulux
+lo ha fatto per collegare i tenant alle leaf. quindi quelle righe forse sono da eliminare.
+poi fa anche da NAT.
+
+ip addr add 3.3.3.2/24 dev eth1
+ip route add default via 3.3.3.1
+ip addr add 192.168.100.2/24 dev eth0
+ip route add 10.0.10.0/24 via 192.168.100.1 dev eth0
+ip route add 10.0.20.0/24 via 192.168.100.1 dev eth0
+
+iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE

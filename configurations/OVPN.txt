@@ -1,0 +1,46 @@
+#file configurazione server
+port 1194
+proto udp
+dev tun
+ca ca.crt
+cert server.crt
+key server.key
+dh dh.pem
+server 192.168.100.0 255.255.255.0
+push "route 192.168.2.0 255.255.255.0"
+push "route 192.168.4.0 255.255.255.0"
+route 192.168.2.0 255.255.255.0
+route 192.168.4.0 255.255.255.0
+client-config-dir ccd
+client-to-client
+keepalive 10 120
+cipher AES-256GCM
+
+
+#in ccd/client402
+iroute 192.168.4.0 255.255.255.0
+
+
+#file configurazione client200
+client
+dev tun
+proto udp
+remote 3.3.3.2 1194
+resolv-retry infinite
+ca ca.crt
+cert client200.crt
+key client200.key
+remote-cert-tls server
+cipher AES-256-GCM
+
+#file configurazione R401
+client
+dev tun
+proto udp
+remote 3.3.3.2 1194
+resolv-retry infinite
+ca ca.crt
+cert client402.crt
+key client402.key
+remote-cert-tls server
+cipher AES-256-GCM
