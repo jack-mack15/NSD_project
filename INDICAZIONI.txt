@@ -20,7 +20,7 @@ client 200 l'ho sostituito con una VM perché ti serve falco che non è presente
 
 DA COMPLETARE:
 
--OPENVPN: verificare e in caso risolvere la possibilità di pingare client 400 da client 200 tramite la vpn.
+-OPENVPN: verificare se le reachability per te hanno senso. testare con tenant b.
 
 -VXLAN: sistemare meglio il traffico uscente e entrante dalla DC. occhio, tenant A devono contattare internet e i tenant B devono essere contattati da internet. 
 segui esattamente le parole della specifica. inoltre matteo ha messo su GW300 una vrf e due interfacce virtuali eth0.10 e eth0.20 e il NAT lo ha applicato internamente

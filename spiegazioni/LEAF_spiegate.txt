@@ -3,28 +3,35 @@ questa sotto è la prima parte, se vedi tutta il bash, come nel primo lab di VXL
 li i tenant erano collegati ad uno switch e lo switch era collegato alla leaf. qui lo switch non c'è quindi ho rimosso quella parte. in teoria giusto.
 della leaf, su GitHub ho riportato solo la parte corretta, mentre nel nodo ci stanno anche le parti in più che però non funzionano.
 
-ip addr add 100.64.0.1/32 dev lo
+BRIDGE: il bridge serve per collegare più interfacce ma credo che nel nostro caso serva a collegare l'interfaccia
+ fisica (prendi eth0 per A) con l'interfaccia VXLAN (o device, vedilo come vuoi). Infatti come vedrai sotto i vado a
+ collegare il bridge con la vrf1. 
+
+ip addr add 100.64.0.1/32 dev lo			#interfaccia loopback
+
 # vrfs and bridges (tenantA)
-ip link add vrf1 type vrf table 1100
-ip link set vrf1 up
+ip link add vrf1 type vrf table 1100			#creo una vrf per il tenant A
+ip link set vrf1 up					#tiro su vrf
 
-ip link add br10 type bridge
-ip link set br10 master vrf1
-ip link set br10 addr aa:bb:cc:00:00:01
-ip addr add 10.0.10.1/24 dev br10
+ip link add br10 type bridge				#creo un bridge per A
+ip link set br10 master vrf1				#associo il bridge alla vrf di A, quindi il traffico che
+ 							#arriva a questo bridge usa le route nella vrf di A
+ip link set br10 addr aa:bb:cc:00:00:01			#assegno un indirizzo mac al bridge
+ip addr add 10.0.10.1/24 dev br10			#gli assegno anche un indirizzo ip, i tenant A poi avranno
+							#default route per questo bridge
 
-ip link set eth0 master br10
+ip link set eth0 master br10				#assegno eth0 al bridge di A e tiro su bridge e eth0
 ip link set eth0 up
 ip link set br10 up
 
-# vni device (tenantA)
-ip link add vni110 type vxlan local 100.64.0.1 dstport 4789 id 110 nolearning
-ip link set vni110 master br10 addrgenmode none
-ip link set vni110 type bridge_slave neigh_suppress on learning off
+# vni device (tenantA), creiamo un device o interfaccia vxlan vni110
+ip link add vni110 type vxlan local 100.64.0.1 dstport 4789 id 110 nolearning 	#qui specifichiamo 100.64.0.1 come indirizzo con cui fa enc e de capsulation
+ip link set vni110 master br10 addrgenmode none					#attacco il device al bridge. addrgenmode disabilita la generazione automatica di indirizzi MAC
+ip link set vni110 type bridge_slave neigh_suppress on learning off		#configuro vni110 come porta virtuale del bridge
 ip link set vni110 up
 
-# vrfs and bridges (tenantB)
-ip link add vrf2 type vrf table 1200
+# vrfs and bridges (tenantB)				#ripeto i passi di sopra anche per B, cambiando indici 
+ip link add vrf2 type vrf table 1200			#e valori
 ip link set vrf2 up
 
 ip link add br20 type bridge

@@ -1,3 +1,9 @@
+le reachability tramite vpn per ora sono le seguenti e dobbiamo vedere se hanno senso:
+- client200 contatta correttamente server, R402 e client400 tramite la vpn.
+- R402 contatta client400 e server tramite vpn.
+- GW300 contatta solo i client openvpn (R402 e client200) ma non client400.
+- client400 contatta solo client200 (e R402) tramite vpn.
+
 questi sono i file di configurazione per utilizzare openvpn. 
 come vedi ho un file per ogni client e uno per il server. questi file stanno nella rispettive cartelle /root/server e /root/clientxxx (no non è un client hot).
 in fondo ti riporto i comandi per eseguire openvpn.

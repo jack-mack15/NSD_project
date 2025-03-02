@@ -1,0 +1,17 @@
+COMANDI UTILI:
+ip -c a			#mostra le interfacce
+
+show ip bgp		#in vtysh, mostra tutte le route apprese con bgp
+show bgp l2vpn evpn	#in vtysh, mostra tutti i messaggi evpn
+
+
+PER FALCO:
+sudo systemctl status falco-modern-bpf.service		#per vedere se falco è running
+sudo bpftool program show				#per vedere i programmi ebpf
+sudo bpftool map show					#per vedere mappe bpf
+
+sudo systemctl reload falco				#per riavviare falco dopo che modifichi o 
+							#aggiungi una rule
+sudo truncate -s 0 /var/log/syslog			#per pulire il log di falco
+sudo cat /var/log/syslog				#per osservare gli output di falco
+

@@ -1,0 +1,11 @@
+FALCO:
+ti ho messo nella cartella configurations il file "falco_rules.local.yaml" che contiene le mie regole custom che ho scritto. quello va inserito nella cartella "/etc/falco" della vm client 200.
+
+per ora ho implementato 3 regole:
+- una che monitora gli accessi a shadow (passwd l'ho tolto, se lo vogliamo rimettere
+no problem)
+- una che monitora gli accessi a file del client200, ovvero certificati, chiavi, file di configurazione di openvpn
+e il file di start.sh
+- una regola che controlla l'utilizzo di indirizzi ip non sicuri, presi dal link riportato sulle slide. non ho inserito uno script di aggiornamento di tali indirizzi anche perché la vm non sarà connessa ad internet.
+
+per fare la robba con indirzzi non sicuri ho messo in fondo al file una lista falco enorme, se trovi un altro modo sentiti libero di modificare il tutto.
