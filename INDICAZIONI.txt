@@ -28,5 +28,4 @@ solo ai tenant B, o una cosa del genere. le interfacce virtuli le ha collegate a
 di VXLAN per collegare  tenat alle leaf.
 manca anche mettere a posto L2.
 
--FALCO: manca tutto falco. matteo ha fatto vari controlli su molti file, quelli critici. inoltre ha scaricato dalla repo specificata sulle slide del belocchi, tutta la lista
-di indirizzi ip non sicuri, quindi ha applicato controlli su quella lista.
+-FALCO: manca la tua parte di falco e magari io posso aggiungere altre regole. vedi FALCO_spiegato 
